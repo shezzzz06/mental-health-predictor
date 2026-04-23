@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mental Health Predictor</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root {
+    --bg: linear-gradient(135deg, #e0f2ff, #f8fbff);
+    --card: rgba(255,255,255,0.85);
+    --text: #1f3c88;
+    --subtext: #555;
+    --accent: #28a745;
+}
+
+body.dark {
+    --bg: #0f172a;
+    --card: rgba(30,41,59,0.9);
+    --text: #e2e8f0;
+    --subtext: #94a3b8;
+    --accent: #22c55e;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    transition: 0.4s;
+}
+
+/* CARD */
+.container {
+    width: 650px;
+    padding: 30px;
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 0.8s ease;
+}
+
+/* HEADER */
+h2 {
+    color: var(--text);
+    margin: 0;
+}
+
+p {
+    color: var(--subtext);
+}
+
+/* TOP BAR */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* DARK MODE BUTTON */
+.toggle {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+}
+
+/* STEPS */
+.steps {
+    display: flex;
+    margin: 20px 0;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-bottom: 3px solid #ccc;
+    font-size: 13px;
+    color: var(--subtext);
+}
+
+.step.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* SYMPTOMS */
+.symptom {
+    display: inline-flex;
+    gap: 8px;
+    padding: 10px 12px;
+    margin: 6px;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+body.dark .symptom {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: white;
+}
+
+.symptom:hover {
+    transform: scale(1.05);
+}
+
+.selected {
+    background: var(--accent);
+    color: white;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* RESULT */
+#result {
+    margin-top: 15px;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: bold;
+}
+
+/* LOADER */
+.loader {
+    display: none;
+    margin-top: 15px;
+    font-size: 14px;
+    color: var(--subtext);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+    .container {
+        width: 90%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topbar">
+        <div>
+            <h2><i class="fa-solid fa-brain"></i> Mental Health Predictor</h2>
+            <p>Safe, private prediction system 💙</p>
+        </div>
+
+        <button class="toggle" onclick="toggleDark()">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </div>
+
+    <div class="steps">
+        <div class="step active">1 Select</div>
+        <div class="step">2 Analyze</div>
+        <div class="step">3 Result</div>
+    </div>
+
+    <div id="symptomContainer"></div>
+
+    <button id="btn" onclick="predict()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Predict
+    </button>
+
+    <div class="loader" id="loader">
+        <i class="fa-solid fa-spinner fa-spin"></i> Analyzing symptoms...
+    </div>
+
+    <p id="result"></p>
+
+</div>
+
+<script>
+let selectedSymptoms = [];
+
+const symptoms = [
+    "Inflated self-esteem", "Distractibility",
+     "Increase in goal-directed activity",
+      "Excessive involvement in activities with high potential for painful consequences",
+       "Racing thoughts", "Decreased need for sleep", 
+       "More talkative than usual","Depressed mood", 
+       "Persistent sadness or low mood",
+        "Loss of interest or pleasure in activities",
+         "Fatigue or loss of energy", "Thoughts of suicide",
+         "Excessive worry or fear", "Restlessness","Irritability",
+          "Sleep disturbance","Disorganized thinking or speech",
+          "Delusions", "Hallucinations","Catatonic behavior",
+           "Diminished emotional expression","Experiencing traumatic event",
+            "Hypervigilance", "Exaggerated startle response", 
+            "Avoidance of reminders of traumatic event"
+];
+
+const container = document.getElementById("symptomContainer");
+
+symptoms.forEach(symptom => {
+    let div = document.createElement("div");
+    div.classList.add("symptom");
+    div.innerHTML = `<i class="fa-regular fa-circle"></i> ${symptom}`;
+
+    div.onclick = () => {
+        if (div.classList.contains("selected")) {
+            div.classList.remove("selected");
+            selectedSymptoms = selectedSymptoms.filter(s => s !== symptom);
+        } else {
+            if (selectedSymptoms.length >= 7) return alert("Max 7 allowed");
+            div.classList.add("selected");
+            selectedSymptoms.push(symptom);
+        }
+    };
+
+    container.appendChild(div);
+});
+
+function typeWriter(text, element, i = 0) {
+    if (i < text.length) {
+        element.innerHTML += text.charAt(i);
+        setTimeout(() => typeWriter(text, element, i + 1), 30);
+    }
+}
+
+function predict() {
+    document.querySelectorAll(".step")[1].classList.add("active");
+
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("btn").disabled = true;
+
+    fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({symptoms: selectedSymptoms})
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("loader").style.display = "none";
+        document.querySelectorAll(".step")[2].classList.add("active");
+
+        let result = document.getElementById("result");
+        result.innerHTML = "";
+        typeWriter("Prediction: " + data.prediction, result);
+
+        document.getElementById("btn").disabled = false;
+    });
+}
+
+function toggleDark() {
+    document.body.classList.toggle("dark");
+}
+</script>
+
+</body>
+</html>
