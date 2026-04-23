@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import joblib
 import pandas as pd
@@ -8,16 +8,16 @@ CORS(app)
 
 # load your model
 import os
-import joblib
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "model.pkl")
 
+print("MODEL LOADING...")
 model = joblib.load(model_path)
+print("MODEL LOADED SUCCESSFULLY")
 
 @app.route("/")
 def home():
-    return "API is working!"
+    return render_template("index.html")
 
 def match_count(user_symptoms, required_symptoms):
     return sum(1 for sym in required_symptoms if sym in user_symptoms)
