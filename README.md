@@ -63,5 +63,11 @@ The system analyzes symptom patterns and provides predictions through an interac
 ##  How to Run Locally
 
 1. Clone the repository  
+2. Install requirements  
+3. Run the app  
+
 ```bash
 git clone https://github.com/shezzzz06/mental-health-predictor.git
+cd mental-health-predictor
+pip install -r requirements.txt
+python app.py
